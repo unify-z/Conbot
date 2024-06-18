@@ -1,0 +1,4 @@
+aiohttp==3.9.5
+APScheduler==3.10.4
+loguru==0.7.2
+websockets==12.0
