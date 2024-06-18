@@ -33,9 +33,9 @@ async def lastest_version():
 async def format_message(data):
     message =[]
     for item in data:
-        _id = item['_id']
         rank = item['rank']
         metric = item.get('metric', {})  
+        _id = metric.get('clusterId', '未知')  
         sponsor = item.get('sponsor', {})  
         sporsor_name = sponsor.get('name', '未知')  
         #user = item.get('user', {})  
@@ -54,10 +54,36 @@ async def format_message(data):
         bytes_mb = await format_units(metric.get('bytes', 0))  
         hits = await format_commas(metric.get('hits', 0))  
         name = item['name']
+
         is_enabled = "✅" if item['isEnabled'] else "❌"
         message.append(f"{rank} | {_id} | {name} | {is_enabled} | {bytes_mb} | {hits} | 所有者 {user_name} | 赞助商 {sporsor_name} | 版本 {version}")
         #message.append()
     return "\n".join( message)
+async def format_rank_message(matching_jsons):
+    messages = []
+    rank = int(matching_jsons[0].get('rank', 0)) + 1
+    metric = matching_jsons[1].get('metric', {})  
+    _id = metric.get('clusterId', '未知')  
+    sponsor = matching_jsons[1].get('sponsor', {})  
+    sporsor_name = sponsor.get('name', '未知')  
+    user = matching_jsons[1].get('user', {})  
+    user_name = user.get('name', '未知')
+        #version = item['version']
+        #if item['version'] is None:
+            #version = "版本获取失败，Keyerror 'version'"
+    try:
+            if matching_jsons[1]['version'] == await lastest_version():
+                    version = matching_jsons[1]['version'] + "🟢"
+            else :
+                    version = matching_jsons[1]['version'] + "🟠"
+    except KeyError:
+                version = "版本获取失败, KeyError:'version'"
+    bytes_mb = await format_units(metric.get('bytes', 0))  
+    hits = await format_commas(metric.get('hits', 0))  
+    name = matching_jsons[1]['name']
+    is_enabled = "✅" if matching_jsons[1]['isEnabled'] else "❌"
+    messages.append(f"{rank} | {_id} | {name} | {is_enabled} | {bytes_mb} | {hits} | 所有者 {user_name} | 赞助商 {sporsor_name} | 版本 {version}")
+    return "\n".join(messages)
 async def fetch_data():
     global clusterList
     cookies = cookie
@@ -73,7 +99,7 @@ async def send_message(group_id , message):
                         "action": "send_group_msg",
                         "params": {
                                 "group_id": group_id,
-                                "message":  f"OpenBMCLAPI 2.0-rc.0\n {message}"
+                                "message":  f"OpenBMCLAPI 2.0-rc.0\n{message}"
                                  },
                         "echo": "echo_value"
                             }
@@ -163,28 +189,36 @@ async def _():
                 else:
                     await reply_message(group_id, "未找到节点" , message_id)
         if msg.startswith(".rank"):
-            rank_num = msg[6:].strip()
-            if_num_is_int = isinstance(rank_num, int)
-            if if_num_is_int is not False:
+            try:
+                rank_num = int(msg[6:].strip())
+                if_num_is_int = True
+            except ValueError:
+                if_num_is_int = False
+            if if_num_is_int is True:
                 try:
-                    data = clusterList
+                    json_data = clusterList
                     matching_jsons = [
-                        {"rank" :int(rank_num) -1},
-                        data[int(rank_num) -1]
-
+                        {"rank" :rank_num -1},
+                        json_data[rank_num -1]
+                        
                     ]
-                    await reply_message(group_id, await format_message(matching_jsons) , message_id)
+                    #logger.debug(f"Matching {len(matching_jsons)} matching cluster(s),{matching_jsons}")
+                    await reply_message(group_id, await format_rank_message(matching_jsons), message_id)
                 except IndexError:
                     await reply_message(group_id, "索引超出范围,请输入正确的排名" , message_id)
+            else:
+                await reply_message(group_id, "请输入正确的数字" , message_id)
 
         if msg.startswith(".top"):
-            top_num = msg[5:].strip()
-            if top_num == "" or top_num is None:
-                top_num = 10
+            try:
+                top_num = int(msg[5:].strip())
                 if_num_is_int = True
-            if_num_is_int = isinstance(top_num, int)
+                if top_num == "" or top_num is None:
+                    top_num = 10
+            except ValueError:
+                if_num_is_int = False
             data = clusterList
-            if if_num_is_int is not False:
+            if if_num_is_int is True:
                 matching_jsons = [
                             {"rank": idx + 1, **item} 
                             for idx, item in enumerate(data) 
@@ -194,7 +228,7 @@ async def _():
             else:
                 await reply_message(group_id, "请输入正确的数字" , message_id)
         if msg.startswith(".help"):
-            await reply_message(group_id , "OpenBMCLAPI 2.0-rc.0\n命令列表：\n.brrs [节点名] 查找节点\n.bmcl 查看OpenBMCLAPI负载\n.bm93 [文件名] 获取该文件名字最相近的图片，为空随机返回\n.user [节点id] 通过id查找节点所有者\n.rank [排名] 获取指定排名的节点\n.top [数量] 获取1-指定数字的节点范围，为空则返回前十名\n.help 查看帮助", message_id)
+            await reply_message(group_id , "命令列表：\n.brrs [节点名] 查找节点\n.bmcl 查看OpenBMCLAPI负载\n.bm93 [文件名] 获取该文件名字最相近的图片，为空随机返回\n.user [节点id] 通过id查找节点所有者\n.rank [排名] 获取指定排名的节点\n.top [数量] 获取1-指定数字的节点范围，为空则返回前十名\n.help 查看帮助", message_id)
 async def main():
     await connect()
     await fetch_data()
