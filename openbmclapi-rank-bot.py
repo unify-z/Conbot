@@ -123,7 +123,7 @@ async def _():
                                         dashboard = await response.json()
                                 #version = requests.get('https://bd.bangbang93.com/openbmclapi/metric/version').json()
                                 #dashboard = requests.get('https://bd.bangbang93.com/openbmclapi/metric/dashboard').json()
-                                await reply_message(group_id, f"OpenBMCLAPI 2.0-rc.0\n官方版本 {version.get('version')}\n在线节点数 {dashboard.get('currentNodes')} 个\n负载: {round(dashboard.get('load')*100, 2)}%\n总出网带宽： {dashboard.get('bandwidth')}mbps\n当前出网带宽：{dashboard.get('currentBandwidth')}mbps\n当日请求：{await format_commas(dashboard.get('hits'))}\n数据量：{await format_units(dashboard.get('bytes'))}\n请求时间：{datetime.datetime.now()}\n数据源 https://bd.bangbang93.com/pages/dashboard" , message_id)
+                                await reply_message(group_id, f"官方版本 {version.get('version')}\n在线节点数 {dashboard.get('currentNodes')} 个\n负载: {round(dashboard.get('load')*100, 2)}%\n总出网带宽： {dashboard.get('bandwidth')}mbps\n当前出网带宽：{dashboard.get('currentBandwidth')}mbps\n当日请求：{await format_commas(dashboard.get('hits'))}\n数据量：{await format_units(dashboard.get('bytes'))}\n请求时间：{datetime.datetime.now()}\n数据源 https://bd.bangbang93.com/pages/dashboard" , message_id)
                             await get_bmcl_data()
         if msg.startswith(".bm93"):
                     file = msg[6:].strip()
