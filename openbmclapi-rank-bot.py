@@ -57,7 +57,7 @@ async def format_message(data):
         is_enabled = "✅" if item['isEnabled'] else "❌"
         message.append(f"{rank} | {_id} | {name} | {is_enabled} | {bytes_mb} | {hits} | 所有者 {user_name} | 赞助商 {sporsor_name} | 版本 {version}")
         #message.append()
-    return "\n".join(message)
+    return "\n".join( message)
 async def fetch_data():
     global clusterList
     cookies = cookie
@@ -73,7 +73,7 @@ async def send_message(group_id , message):
                         "action": "send_group_msg",
                         "params": {
                                 "group_id": group_id,
-                                "message":  message
+                                "message":  f"OpenBMCLAPI 2.0-rc.0\n {message}"
                                  },
                         "echo": "echo_value"
                             }
@@ -84,7 +84,7 @@ async def reply_message(group_id,message, message_id):
                         "action": "send_group_msg",
                         "params": {
                                 "group_id": group_id,
-                                "message": f'[CQ:reply,id={message_id}]' + f"{message}"
+                                "message": f'[CQ:reply,id={message_id}]' + f"OpenBMCLAPI 2.0-rc.0\n {message}"
                                  },
                         "echo": "echo_value"
                             }
