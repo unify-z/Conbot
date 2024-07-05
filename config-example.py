@@ -2,3 +2,5 @@
 cookies = {
     'openbmclapi-jwt': ""
 }
+
+top_query_limit = 100 # 查询上限，默认 100，-1 为不限制

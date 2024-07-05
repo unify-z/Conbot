@@ -9,6 +9,7 @@ import re
 from loguru import logger
 import websockets
 from config import cookies as cookie
+from config import top_query_limit
 clusterList = {}
 async def connect():
     global websocket
@@ -215,6 +216,9 @@ async def _():
                 if_num_is_int = True
                 if top_num == "" or top_num is None:
                     top_num = 10
+                if top_query_limit > 0 and top_num > top_query_limit:
+                    await reply_message(group_id, f"请输入小于{top_query_limit}的数字" , message_id)
+                    return
             except ValueError:
                 if_num_is_int = False
             data = clusterList
