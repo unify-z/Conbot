@@ -9,13 +9,17 @@ import re
 from loguru import logger
 import websockets
 from config import Config
+
 clusterList = {}
+
 async def connect():
     global websocket
     websocket =await websockets.connect('ws://127.0.0.1:3001')
     logger.info("Bot Connected")
+
 async def format_commas(num):
     return '{:,}'.format(num)
+
 async def format_units(value):
     mb_value = value / 1024 / 1024
     gb_value = mb_value / 1024  
@@ -24,12 +28,14 @@ async def format_units(value):
         return f"{tb_value:.2f}TB"  
     else:  
         return f"{gb_value:.2f}GB"
+
 async def lastest_version():
         async with aiohttp.ClientSession() as session:
             async with session.get('https://bd.bangbang93.com/openbmclapi/metric/version') as response:
                 version = await response.json()
         #ersion = requests.get('https://bd.bangbang93.com/openbmclapi/metric/version').json()
         return version.get('version')
+
 async def format_message(data):
     message =[]
     for item in data:
@@ -58,7 +64,8 @@ async def format_message(data):
         is_enabled = "✅" if item['isEnabled'] else "❌"
         message.append(f"{rank} | {_id} | {name} | {is_enabled} | {bytes_mb} | {hits} | 所有者 {user_name} | 赞助商 {sporsor_name} | 版本 {version}")
         #message.append()
-    return "\n".join( message)
+    return "\n".join(message)
+
 async def format_rank_message(matching_jsons):
     messages = []
     rank = int(matching_jsons[0].get('rank', 0)) + 1
@@ -84,6 +91,7 @@ async def format_rank_message(matching_jsons):
     is_enabled = "✅" if matching_jsons[1]['isEnabled'] else "❌"
     messages.append(f"{rank} | {_id} | {name} | {is_enabled} | {bytes_mb} | {hits} | 所有者 {user_name} | 赞助商 {sporsor_name} | 版本 {version}")
     return "\n".join(messages)
+
 async def fetch_data():
     global clusterList
     cookies = Config.cookies
@@ -105,6 +113,7 @@ async def send_message(group_id , message):
                             }
     logger.info(f"Sending Message: {json.dumps(send_data, indent=4, ensure_ascii=False)}")
     await websocket.send(json.dumps(send_data))
+
 async def reply_message(group_id,message, message_id):
     send_data = {
                         "action": "send_group_msg",
@@ -116,6 +125,7 @@ async def reply_message(group_id,message, message_id):
                             }
     logger.info(f"Sending Message: {json.dumps(send_data, indent=4, ensure_ascii=False)}")
     await websocket.send(json.dumps(send_data))
+
 async def _():
         message = await websocket.recv()
         data = json.loads(message) 
@@ -232,6 +242,7 @@ async def _():
                     await reply_message(group_id, "请输入正确的数字" , message_id)
             case ".help":
                 await reply_message(group_id , "命令列表：\n.brrs [节点名] 查找节点\n.bmcl 查看OpenBMCLAPI负载\n.bm93 [文件名] 获取该文件名字最相近的图片，为空随机返回\n.user [节点id] 通过id查找节点所有者\n.rank [排名] 获取指定排名的节点\n.top [数量] 获取1-指定数字的节点范围，为空则返回前十名\n.help 查看帮助", message_id)
+
 async def main():
     await connect()
     await fetch_data()
@@ -239,6 +250,7 @@ async def main():
     scheduler.add_job(fetch_data, 'interval', seconds=30)
     scheduler.start()
     while True:
-            await _()
+        await _()
+
 if __name__ == '__main__':
     asyncio.run(main())
