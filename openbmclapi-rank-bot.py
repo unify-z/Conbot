@@ -8,8 +8,7 @@ import datetime
 import re
 from loguru import logger
 import websockets
-from config import cookies as cookie
-from config import top_query_limit
+from config import Config
 clusterList = {}
 async def connect():
     global websocket
@@ -87,7 +86,7 @@ async def format_rank_message(matching_jsons):
     return "\n".join(messages)
 async def fetch_data():
     global clusterList
-    cookies = cookie
+    cookies = Config.cookies
     base_url = "https://bd.bangbang93.com/openbmclapi/metric/rank"
     async with aiohttp.ClientSession(cookies=cookies) as session:
         logger.info("Fetching data")
@@ -216,8 +215,8 @@ async def _():
                 if_num_is_int = True
                 if top_num == "" or top_num is None:
                     top_num = 10
-                if top_query_limit > 0 and top_num > top_query_limit:
-                    await reply_message(group_id, f"请输入小于{top_query_limit}的数字" , message_id)
+                if Config.top_query_limit > 0 and top_num > Config.top_query_limit:
+                    await reply_message(group_id, f"请输入小于{Config.top_query_limit}的数字" , message_id)
                     return
             except ValueError:
                 if_num_is_int = False
