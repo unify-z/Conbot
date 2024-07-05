@@ -123,115 +123,115 @@ async def _():
         logger.info(f"Received Message: {json.dumps(data, indent=4, ensure_ascii=False)}")
         msg = data.get("raw_message", "")
         group_id = data.get("group_id")
-        if msg.startswith(".brrs"):
-            params = msg[5:].strip()
-            if params == "" or params is None:
-                await reply_message(group_id, "请输入节点名称" , message_id)
-            if params:
-                data = clusterList
-                matching_jsons = [
-                    {"rank": idx + 1, **item} 
-                    for idx, item in enumerate(data) 
-                    if re.search(params, item.get("name", ""), re.IGNORECASE)
-                    ]
-                if matching_jsons:
-                    logger.info(f"Matched {len(matching_jsons)} matching cluster(s),{matching_jsons}")
-                    await reply_message(group_id, await format_message(matching_jsons) , message_id)
-                else:
-                    logger.info("No matching clusters")
-                    await reply_message(group_id, "未找到节点" , message_id)
-        if msg.startswith(".bmcl"):
-                            async def get_bmcl_data():
-                                async with aiohttp.ClientSession() as session:
-                                    async with session.get('https://bd.bangbang93.com/openbmclapi/metric/version') as response:
-                                        version = await response.json()
-                                    async with session.get('https://bd.bangbang93.com/openbmclapi/metric/dashboard') as response:
-                                        dashboard = await response.json()
-                                #version = requests.get('https://bd.bangbang93.com/openbmclapi/metric/version').json()
-                                #dashboard = requests.get('https://bd.bangbang93.com/openbmclapi/metric/dashboard').json()
-                                await reply_message(group_id, f"官方版本 {version.get('version')}\n在线节点数 {dashboard.get('currentNodes')} 个\n负载: {round(dashboard.get('load')*100, 2)}%\n总出网带宽： {dashboard.get('bandwidth')}mbps\n当前出网带宽：{dashboard.get('currentBandwidth')}mbps\n当日请求：{await format_commas(dashboard.get('hits'))}\n数据量：{await format_units(dashboard.get('bytes'))}\n请求时间：{datetime.datetime.now()}\n数据源 https://bd.bangbang93.com/pages/dashboard" , message_id)
-                            await get_bmcl_data()
-        if msg.startswith(".bm93"):
-                    file = msg[6:].strip()
-                    if file is None or file == "":
-                            async with aiohttp.ClientSession() as session:
-                                async with session.get('https://apis.bmclapi.online/api/93/random?type=json') as response:
-                                    data = await response.json()
-                                    url = data.get('data',{}).get('url')
-                                    await reply_message(group_id, f'[CQ:image,file={url}]' , message_id)
-                    else:
-                        matchList = []
-                        async with aiohttp.ClientSession() as session:
-                            async with session.get('https://apis.bmclapi.online/api/93/filelist') as response:
-                                imageList = await response.json()
-                        #imageList = requests.get('https://ttb-network.top:8800/mirrors/bangbang93hub/filelist').json()
-                        for i in imageList:
-                            if str(file).lower() in i:
-                                    matchList.append(i)
-                        if len(matchList) < 1:
-                                    await reply_message(group_id, f"未找到文件" , message_id)
-                        elif len(matchList) == 1:
-                                    await reply_message(group_id, f"[CQ:image,file=https://unifyz.s3.bitiful.net/mirrors/93hub/{matchList[0]}]", message_id)
-                        else:
-                                    await reply_message(group_id, f"找到文件过多，请使用更精确的名字" , message_id)
-        if msg.startswith(".user"):
-            clusterid = msg[6:].strip()
-            if clusterid:
-                data = clusterList
-                matching_jsons = [
-                    {"rank": idx + 1, **item} 
-                    for idx, item in enumerate(data) 
-                    if re.search(clusterid, item.get("_id", ""), re.IGNORECASE)
-                    ]
-                logger.info(f"Matching {len(matching_jsons)} matching cluster(s),{matching_jsons}")
-                if matching_jsons:
-                    await reply_message(group_id, await format_message(matching_jsons) , message_id)
-                else:
-                    await reply_message(group_id, "未找到节点" , message_id)
-        if msg.startswith(".rank"):
-            try:
-                rank_num = int(msg[6:].strip())
-                if_num_is_int = True
-            except ValueError:
-                if_num_is_int = False
-            if if_num_is_int is True:
-                try:
-                    json_data = clusterList
+        match (msg.split(' ')[0]):
+            case ".brrs":
+                params = msg[5:].strip()
+                if params == "" or params is None:
+                    await reply_message(group_id, "请输入节点名称" , message_id)
+                if params:
+                    data = clusterList
                     matching_jsons = [
-                        {"rank" :rank_num -1},
-                        json_data[rank_num -1]
-                        
-                    ]
-                    #logger.debug(f"Matching {len(matching_jsons)} matching cluster(s),{matching_jsons}")
-                    await reply_message(group_id, await format_rank_message(matching_jsons), message_id)
-                except IndexError:
-                    await reply_message(group_id, "索引超出范围,请输入正确的排名" , message_id)
-            else:
-                await reply_message(group_id, "请输入正确的数字" , message_id)
+                        {"rank": idx + 1, **item} 
+                        for idx, item in enumerate(data) 
+                        if re.search(params, item.get("name", ""), re.IGNORECASE)
+                        ]
+                    if matching_jsons:
+                        logger.info(f"Matched {len(matching_jsons)} matching cluster(s),{matching_jsons}")
+                        await reply_message(group_id, await format_message(matching_jsons) , message_id)
+                    else:
+                        logger.info("No matching clusters")
+                        await reply_message(group_id, "未找到节点" , message_id)
+            case ".bmcl":
+                                async def get_bmcl_data():
+                                    async with aiohttp.ClientSession() as session:
+                                        async with session.get('https://bd.bangbang93.com/openbmclapi/metric/version') as response:
+                                            version = await response.json()
+                                        async with session.get('https://bd.bangbang93.com/openbmclapi/metric/dashboard') as response:
+                                            dashboard = await response.json()
+                                    #version = requests.get('https://bd.bangbang93.com/openbmclapi/metric/version').json()
+                                    #dashboard = requests.get('https://bd.bangbang93.com/openbmclapi/metric/dashboard').json()
+                                    await reply_message(group_id, f"官方版本 {version.get('version')}\n在线节点数 {dashboard.get('currentNodes')} 个\n负载: {round(dashboard.get('load')*100, 2)}%\n总出网带宽： {dashboard.get('bandwidth')}mbps\n当前出网带宽：{dashboard.get('currentBandwidth')}mbps\n当日请求：{await format_commas(dashboard.get('hits'))}\n数据量：{await format_units(dashboard.get('bytes'))}\n请求时间：{datetime.datetime.now()}\n数据源 https://bd.bangbang93.com/pages/dashboard" , message_id)
+                                await get_bmcl_data()
+            case ".bm93":
+                        file = msg[6:].strip()
+                        if file is None or file == "":
+                                async with aiohttp.ClientSession() as session:
+                                    async with session.get('https://apis.bmclapi.online/api/93/random?type=json') as response:
+                                        data = await response.json()
+                                        url = data.get('data',{}).get('url')
+                                        await reply_message(group_id, f'[CQ:image,file={url}]' , message_id)
+                        else:
+                            matchList = []
+                            async with aiohttp.ClientSession() as session:
+                                async with session.get('https://apis.bmclapi.online/api/93/filelist') as response:
+                                    imageList = await response.json()
+                            #imageList = requests.get('https://ttb-network.top:8800/mirrors/bangbang93hub/filelist').json()
+                            for i in imageList:
+                                if str(file).lower() in i:
+                                        matchList.append(i)
+                            if len(matchList) < 1:
+                                        await reply_message(group_id, f"未找到文件" , message_id)
+                            elif len(matchList) == 1:
+                                        await reply_message(group_id, f"[CQ:image,file=https://unifyz.s3.bitiful.net/mirrors/93hub/{matchList[0]}]", message_id)
+                            else:
+                                        await reply_message(group_id, f"找到文件过多，请使用更精确的名字" , message_id)
+            case ".user":
+                clusterid = msg[6:].strip()
+                if clusterid:
+                    data = clusterList
+                    matching_jsons = [
+                        {"rank": idx + 1, **item} 
+                        for idx, item in enumerate(data) 
+                        if re.search(clusterid, item.get("_id", ""), re.IGNORECASE)
+                        ]
+                    logger.info(f"Matching {len(matching_jsons)} matching cluster(s),{matching_jsons}")
+                    if matching_jsons:
+                        await reply_message(group_id, await format_message(matching_jsons) , message_id)
+                    else:
+                        await reply_message(group_id, "未找到节点" , message_id)
+            case ".rank":
+                try:
+                    rank_num = int(msg[6:].strip())
+                    if_num_is_int = True
+                except ValueError:
+                    if_num_is_int = False
+                if if_num_is_int is True:
+                    try:
+                        json_data = clusterList
+                        matching_jsons = [
+                            {"rank" :rank_num -1},
+                            json_data[rank_num -1]
 
-        if msg.startswith(".top"):
-            try:
-                top_num = int(msg[5:].strip())
-                if_num_is_int = True
-                if top_num == "" or top_num is None:
-                    top_num = 10
-                if Config.top_query_limit > 0 and top_num > Config.top_query_limit:
-                    await reply_message(group_id, f"请输入小于{Config.top_query_limit}的数字" , message_id)
-                    return
-            except ValueError:
-                if_num_is_int = False
-            data = clusterList
-            if if_num_is_int is True:
-                matching_jsons = [
-                            {"rank": idx + 1, **item} 
-                            for idx, item in enumerate(data) 
-                            if idx < int(top_num)
-                                ]  
-                await reply_message(group_id, await format_message(matching_jsons) , message_id)
-            else:
-                await reply_message(group_id, "请输入正确的数字" , message_id)
-        if msg.startswith(".help"):
-            await reply_message(group_id , "命令列表：\n.brrs [节点名] 查找节点\n.bmcl 查看OpenBMCLAPI负载\n.bm93 [文件名] 获取该文件名字最相近的图片，为空随机返回\n.user [节点id] 通过id查找节点所有者\n.rank [排名] 获取指定排名的节点\n.top [数量] 获取1-指定数字的节点范围，为空则返回前十名\n.help 查看帮助", message_id)
+                        ]
+                        #logger.debug(f"Matching {len(matching_jsons)} matching cluster(s),{matching_jsons}")
+                        await reply_message(group_id, await format_rank_message(matching_jsons), message_id)
+                    except IndexError:
+                        await reply_message(group_id, "索引超出范围,请输入正确的排名" , message_id)
+                else:
+                    await reply_message(group_id, "请输入正确的数字" , message_id)
+            case ".top":
+                try:
+                    top_num = int(msg[5:].strip())
+                    if_num_is_int = True
+                    if top_num == "" or top_num is None:
+                        top_num = 10
+                    if Config.top_query_limit > 0 and top_num > Config.top_query_limit:
+                        await reply_message(group_id, f"请输入小于{Config.top_query_limit}的数字" , message_id)
+                        return
+                except ValueError:
+                    if_num_is_int = False
+                data = clusterList
+                if if_num_is_int is True:
+                    matching_jsons = [
+                                {"rank": idx + 1, **item} 
+                                for idx, item in enumerate(data) 
+                                if idx < int(top_num)
+                                    ]  
+                    await reply_message(group_id, await format_message(matching_jsons) , message_id)
+                else:
+                    await reply_message(group_id, "请输入正确的数字" , message_id)
+            case ".help":
+                await reply_message(group_id , "命令列表：\n.brrs [节点名] 查找节点\n.bmcl 查看OpenBMCLAPI负载\n.bm93 [文件名] 获取该文件名字最相近的图片，为空随机返回\n.user [节点id] 通过id查找节点所有者\n.rank [排名] 获取指定排名的节点\n.top [数量] 获取1-指定数字的节点范围，为空则返回前十名\n.help 查看帮助", message_id)
 async def main():
     await connect()
     await fetch_data()
