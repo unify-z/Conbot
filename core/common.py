@@ -1,3 +1,6 @@
+"""
+  Author: 2b2ttianxiu <administrator@ttb-network.top>
+"""
 import asyncio
 from collections import defaultdict
 from dataclasses import dataclass

@@ -1,3 +1,6 @@
+"""
+  Author: 2b2ttianxiu <administrator@ttb-network.top>
+"""
 from dataclasses import dataclass
 from typing import Any, Optional
 
