@@ -1,1 +1,0 @@
-# openbmclapi-rank-bot
