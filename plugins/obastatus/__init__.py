@@ -102,3 +102,30 @@ async def init():
      scheduler.add_job(fetch_data, 'interval', seconds=30)
      scheduler.start()
      msg =Message()
+     @bot.on("message")
+     async def _(event: MessageEvent,matcher:Matcher):
+        raw_msg = event.raw_message
+        if raw_msg.startswith == "/brrs":
+               clustername = raw_msg.split(" ")[5]
+               if not clustername:
+                    msg.append(MessageSegment.text("请输入节点名称"))
+               if clustername:
+                    data = clusterList
+                    matching_jsons = [
+                        {"rank": idx + 1, **item} 
+                        for idx, item in enumerate(data) 
+                        if re.search(clustername, item.get("name", ""), re.IGNORECASE)
+                        ]   
+                    if matching_jsons:
+                         msg.append(MessageSegment.text(await format_message(matching_jsons)))
+                    else:
+                         msg.append(MessageSegment.text("未找到节点"))
+               #await matcher.finish(msg)
+        if raw_msg.startswith == "/bmcl":
+             async with aiohttp.ClientSession() as session:
+                async with session.get('https://bd.bangbang93.com/openbmclapi/metric/version') as response:
+                    version = await response.json()
+                async with session.get('https://bd.bangbang93.com/openbmclapi/metric/dashboard') as response:
+                    dashboard = await response.json()
+                msg.append(MessageSegment.text(f"OpenBMCLAPI 2.0-rc0\n官方版本 {version.get('version')} | 在线节点数 {dashboard.get('currentNodes')} 个\n负载: {round(dashboard.get('load')*100, 2)}% | 总出网带宽： {dashboard.get('bandwidth')}mbps\n当前出网带宽：{dashboard.get('currentBandwidth')}mbps | 当日请求：{await format_commas(dashboard.get('hits'))}\n数据量：{await format_units(dashboard.get('bytes'))} | 请求时间：{datetime.datetime.now()}\n数据源 https://bd.bangbang93.com/pages/dashboard"))
+        await matcher.finish(msg)

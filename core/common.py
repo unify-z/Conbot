@@ -86,7 +86,7 @@ class Bot:
         if data["params"].get("message") == []:
             pass
         else:
-            logging.info(f"发送数据:类型:{action},参数:{params},echo:{echo}")
+            logging.info(f"调用 API {action}")
         MESSAGES[echo] = asyncio.get_event_loop().create_future()
         try:
             await MESSAGES[echo]
