@@ -1,0 +1,9 @@
+aiohttp==3.9.5
+APScheduler==3.10.4
+fastapi==0.112.1
+loguru==0.7.2
+psutil==6.0.0
+PyYAML==6.0.1
+Requests==2.32.3
+uvicorn==0.30.6
+websockets==12.0

@@ -1,0 +1,5 @@
+bot:
+ self_id: 0
+ws:
+ host: 0.0.0.0
+ port: 3001
